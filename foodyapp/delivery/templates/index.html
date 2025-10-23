@@ -1,0 +1,32 @@
+ {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodyApp</title>
+<link rel="stylesheet" href="{% static 'delivery/css-files/style-index.css' %}">
+</head>
+<body>
+   
+    <header>
+        <h1>Welcome to FoodyApp!</h1>
+        <p>Your favorite food delivery service</p>
+    </header>
+    
+    <nav>
+        <ul>
+            
+            <li><a href="{% url 'signin' %}">Sign In</a></li>
+            <li><a href="{% url 'signup' %}">Sign Up</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="main-content">
+            <h2>Order your favorite food now!</h2>
+            <p>Browse through our extensive menu and get delicious food delivered to your doorstep.</p>
+        </div>
+    </div>
+</body>
+</html>
