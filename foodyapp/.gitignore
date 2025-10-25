@@ -18,8 +18,7 @@ ENV/
 *.pyc
 db.sqlite3
 
-staticfiles/
-static/
+
 
 # IDE
 .vscode/

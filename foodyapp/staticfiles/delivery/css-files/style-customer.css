@@ -1,0 +1,26 @@
+
+        .restaurant-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            transition: transform 0.2s;
+            margin-bottom: 20px;
+        }
+        .restaurant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .cart-badge {
+            position: relative;
+            top: -8px;
+            right: 5px;
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .welcome-section {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
