@@ -1,0 +1,415 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodyApp - Customer Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'delivery/css/style-main.css' %}"
+   
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-utensils me-2"></i>FoodyApp
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#orders">
+                            <i class="fas fa-clipboard-list me-1"></i>My Orders
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <a href="#cart" class="btn btn-outline-primary me-3 shadow-hover">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="badge bg-danger cart-badge">{{ cart_items|length }}</span>
+                    </a>
+                    <a href="{% url 'home' %}" class="btn btn-outline-primary shadow-hover">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-center py-5">
+        <div class="container">
+            <h1>Welcome, {{ customer.first_name }}! 👋</h1>
+            <p class="lead">What would you like to eat today?</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Restaurants Section -->
+        <section class="mb-5">
+            <h2 class="mb-4">Available Restaurants</h2>
+            <div class="row">
+                {% for restaurant in restaurants %}
+                <div class="col-md-4">
+                    <div class="restaurant-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ restaurant.restaurant_name }}</h5>
+                                <p class="card-text text-muted">{{ restaurant.restaurant_description }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="text-muted">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            {{ restaurant.restaurant_location }}
+                                        </span>
+                                    </div>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#menuModal{{ restaurant.id }}">
+                                        View Menu
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Orders Section -->
+        <section id="orders" class="mb-5">
+            <h2 class="mb-4">Your Orders</h2>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Restaurant</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.restaurant.restaurant_name }}</td>
+                            <td>{{ order.get_items_count }} items</td>
+                            <td>₹{{ order.total }}</td>
+                            <td>
+                                <span class="badge {% if order.status == 'Delivered' %}bg-success
+                                            {% elif order.status == 'Processing' %}bg-warning
+                                            {% elif order.status == 'Cancelled' %}bg-danger
+                                            {% else %}bg-info{% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                            <td>{{ order.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#orderModal{{ order.id }}">
+                                    View Details
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <p class="text-muted mb-0">You haven't placed any orders yet.</p>
+                                <p class="mt-2">Explore our restaurants above to place your first order!</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal fade" id="cartModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Your Cart</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    {% if cart_items %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                <tr>
+                                    <td>{{ item.menu_item.item_name }}</td>
+                                    <td>₹{{ item.menu_item.item_price }}</td>
+                                    <td>
+                                        <div class="input-group input-group-sm" style="width: 100px;">
+                                            <button type="button" onclick="updateCartItem({{ item.menu_item.id }}, 'decrease')" class="btn btn-outline-secondary">-</button>
+                                            <input type="text" class="form-control text-center" value="{{ item.quantity }}" readonly>
+                                            <button type="button" onclick="updateCartItem({{ item.menu_item.id }}, 'increase')" class="btn btn-outline-secondary">+</button>
+                                        </div>
+                                    </td>
+                                    <td>₹{{ item.get_total }}</td>
+                                    <td>
+                                        <button onclick="removeFromCart({{ item.menu_item.id }})" class="btn btn-sm btn-danger">Remove</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td colspan="2"><strong>₹{{ cart_total }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <form method="post" action="{% url 'place_order' %}" class="text-end mt-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Place Order</button>
+                    </form>
+                    {% else %}
+                    <p class="text-center py-4">Your cart is empty.</p>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modals -->
+    {% for order in orders %}
+    <div class="modal fade" id="orderModal{{ order.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order #{{ order.id }} Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Restaurant:</strong> {{ order.restaurant.restaurant_name }}</p>
+                            <p><strong>Order Date:</strong> {{ order.created_at|date:"M d, Y" }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge {% if order.status == 'Delivered' %}bg-success
+                                            {% elif order.status == 'Processing' %}bg-warning
+                                            {% elif order.status == 'Cancelled' %}bg-danger
+                                            {% else %}bg-info{% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.orderitem_set.all %}
+                                <tr>
+                                    <td>{{ item.menu_item.item_name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>₹{{ item.price }}</td>
+                                    <td>₹{{ item.get_total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td><strong>₹{{ order.total }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Restaurant Menu Modals -->
+    {% for restaurant in restaurants %}
+    <div class="modal fade" id="menuModal{{ restaurant.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ restaurant.restaurant_name }} - Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Description</th>
+                                    <th>Price</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in restaurant.menu_items.all %}
+                                <tr>
+                                    <td>
+                                        <h6 class="mb-0">{{ item.item_name }}</h6>
+                                        <small class="text-muted">{{ item.item_category }}</small>
+                                    </td>
+                                    <td>{{ item.item_description }}</td>
+                                    <td>₹{{ item.item_price }}</td>
+                                    <td>
+                                        <form action="{% url 'add_to_cart' %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" name="quantity" value="1" min="1" class="form-control" style="width: 60px">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-cart-plus"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">No menu items available.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    {% csrf_token %}
+    <script>
+        // Initialize cart modal
+        let cartModal = null;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Add CSRF token to all fetch requests
+        function addCsrfHeader(headers = {}) {
+            return {
+                ...headers,
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            };
+        }
+
+        // Show cart modal when clicking cart button
+        document.querySelector('a[href="#cart"]').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!cartModal) {
+                cartModal = new bootstrap.Modal(document.getElementById('cartModal'));
+            }
+            cartModal.show();
+        });
+
+        // Function to update cart item quantity
+        async function updateCartItem(itemId, action) {
+            try {
+                const response = await fetch('{% url "update_cart" %}', {
+                    method: 'POST',
+                    headers: addCsrfHeader(),
+                    body: `item_id=${itemId}&action=${action}`
+                });
+
+                if (response.ok) {
+                    // Update the cart contents without refreshing the page
+                    const cartResponse = await fetch(window.location.href);
+                    const cartHtml = await cartResponse.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(cartHtml, 'text/html');
+                    
+                    // Update cart items
+                    document.querySelector('.cart-badge').textContent = doc.querySelector('.cart-badge').textContent;
+                    document.querySelector('#cartModal .modal-body').innerHTML = doc.querySelector('#cartModal .modal-body').innerHTML;
+                }
+            } catch (error) {
+                console.error('Error updating cart:', error);
+            }
+        }
+
+        // Function to remove item from cart
+        async function removeFromCart(itemId) {
+            try {
+                const response = await fetch('{% url "remove_from_cart" %}', {
+                    method: 'POST',
+                    headers: addCsrfHeader(),
+                    body: `item_id=${itemId}`
+                });
+
+                if (response.ok) {
+                    // Update the cart contents without refreshing the page
+                    const cartResponse = await fetch(window.location.href);
+                    const cartHtml = await cartResponse.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(cartHtml, 'text/html');
+                    
+                    // Update cart items
+                    document.querySelector('.cart-badge').textContent = doc.querySelector('.cart-badge').textContent;
+                    document.querySelector('#cartModal .modal-body').innerHTML = doc.querySelector('#cartModal .modal-body').innerHTML;
+                    
+                    // If cart is empty, update the entire modal content
+                    if (doc.querySelector('.cart-badge').textContent === '0') {
+                        document.querySelector('#cartModal .modal-content').innerHTML = doc.querySelector('#cartModal .modal-content').innerHTML;
+                    }
+                }
+            } catch (error) {
+                console.error('Error removing item:', error);
+            }
+        }
+
+        // Add CSRF token to add-to-cart forms
+        document.addEventListener('DOMContentLoaded', function() {
+            const addToCartForms = document.querySelectorAll('form[action="{% url "add_to_cart" %}"]');
+            addToCartForms.forEach(form => {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = csrfToken;
+                form.prepend(csrfInput);
+            });
+        });
+    </script>
+</body>
+</html>
